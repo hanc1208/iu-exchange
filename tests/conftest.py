@@ -6,8 +6,8 @@ from ormeasy.sqlalchemy import test_connection
 from pytest import fixture
 from typeguard import typechecked
 
-from app.orm import Base, Session, SessionType, create_session
-from app.web.wsgi import create_wsgi_app
+from iu.orm import Base, Session, SessionType, create_session
+from iu.web.wsgi import create_wsgi_app
 
 
 @fixture
@@ -18,7 +18,7 @@ def fx_config() -> Mapping[str, Any]:
             'SECRET_KEY': 'de775515f6a4cdca5edfd71c2a32193d',
         },
         'database': {
-            'url': 'postgresql:///app-test',
+            'url': 'postgresql:///iu-exchange-test',
         },
     }
 

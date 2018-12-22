@@ -8,7 +8,7 @@ import pathlib
 from toml import load as toml_load
 from gevent.pywsgi import WSGIServer
 
-from app.web.wsgi import create_wsgi_app
+from iu.web.wsgi import create_wsgi_app
 
 parser = argparse.ArgumentParser(
     formatter_class=argparse.ArgumentDefaultsHelpFormatter

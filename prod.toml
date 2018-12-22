@@ -2,4 +2,4 @@
 SECRET_KEY = '95a106a30a86c42e622187acf7575c5f8009133d044d5275'
 
 [database]
-url = "postgresql:///app"
+url = "postgresql:///iu-exchange"

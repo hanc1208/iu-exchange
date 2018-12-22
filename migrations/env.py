@@ -6,10 +6,10 @@ from flask import current_app
 from ormeasy.common import import_all_modules
 from sqlalchemy import engine_from_config, pool
 
-from app.orm import Base
+from iu.orm import Base
 
 
-import_all_modules('app')
+import_all_modules('iu')
 
 
 # this is the Alembic Config object, which provides

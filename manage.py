@@ -6,7 +6,7 @@ from flask_script import Manager
 from toml import load
 from typeguard import typechecked
 
-from app.web.wsgi import create_wsgi_app
+from iu.web.wsgi import create_wsgi_app
 
 
 @typechecked

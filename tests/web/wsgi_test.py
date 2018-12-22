@@ -2,7 +2,7 @@ from typing import Any, Mapping
 
 from typeguard import typechecked
 
-from app.web.wsgi import create_wsgi_app
+from iu.web.wsgi import create_wsgi_app
 
 
 @typechecked
