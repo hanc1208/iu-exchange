@@ -9,6 +9,7 @@ from pytest import fixture
 from typeguard import typechecked
 
 from iu.currency import Currency
+from iu.market import Market
 from iu.orm import Base, Session, SessionType, create_session
 from iu.user import User
 from iu.web.wsgi import create_wsgi_app
@@ -101,3 +102,21 @@ def fx_currency_usdt(fx_currencies: Mapping[str, Currency]) -> Currency:
 @typechecked
 def fx_currency_btc(fx_currencies: Mapping[str, Currency]) -> Currency:
     return fx_currencies['BTC']
+
+
+@fixture
+@typechecked
+def fx_market(
+    fx_currencies: Mapping[str, Currency],
+    fx_session: Session,
+) -> Market:
+    market = Market(
+        pair='BTC/USDT',
+        current_price=decimal.Decimal('8496.27'),
+        maker_fee=decimal.Decimal('0.001'),
+        taker_fee=decimal.Decimal('0.002'),
+        minimum_order_amount=decimal.Decimal('0.0001'),
+    )
+    fx_session.add(market)
+    fx_session.flush()
+    return market
