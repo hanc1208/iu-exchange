@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from typing import Any, Mapping
 
 from flask import Flask
@@ -7,6 +8,7 @@ from pytest import fixture
 from typeguard import typechecked
 
 from iu.orm import Base, Session, SessionType, create_session
+from iu.user import User
 from iu.web.wsgi import create_wsgi_app
 
 
@@ -42,3 +44,17 @@ def fx_session(fx_wsgi_app: Flask) -> SessionType:
     engine = session.bind
     with test_connection(fx_wsgi_app, Base.metadata, engine) as connection:
         yield Session(bind=connection)
+
+
+@fixture
+@typechecked
+def fx_user(fx_session: Session, fx_utcnow: datetime.datetime) -> User:
+    user = User(
+        id=uuid.UUID(int=1),
+        created_at=fx_utcnow,
+        email='user@iu.exchange',
+        password='iu-exchange!',
+    )
+    fx_session.add(user)
+    fx_session.flush()
+    return user
