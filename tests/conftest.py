@@ -8,6 +8,7 @@ from ormeasy.sqlalchemy import test_connection
 from pytest import fixture
 from typeguard import typechecked
 
+from iu.balance import Balance
 from iu.currency import Currency
 from iu.market import Market
 from iu.orm import Base, Session, SessionType, create_session
@@ -120,3 +121,35 @@ def fx_market(
     fx_session.add(market)
     fx_session.flush()
     return market
+
+
+@fixture
+@typechecked
+def fx_user(fx_session: Session, fx_utcnow: datetime.datetime) -> User:
+    user = User(
+        id=uuid.UUID(int=1),
+        created_at=fx_utcnow,
+        email='user@iu.exchange',
+        password='iu-exchange!',
+    )
+    fx_session.add(user)
+    fx_session.flush()
+    return user
+
+
+@fixture
+@typechecked
+def fx_balance(
+    fx_currency_usdt: Currency,
+    fx_session: Session,
+    fx_user: User,
+) -> Balance:
+    balance = Balance(
+        user=fx_user,
+        currency=fx_currency_usdt.id,
+        amount=decimal.Decimal('100000'),
+        locked_amount=decimal.Decimal('0'),
+    )
+    fx_session.add(balance)
+    fx_session.flush()
+    return balance
