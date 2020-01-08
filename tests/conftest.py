@@ -14,6 +14,7 @@ from iu.currency import Currency
 from iu.market import Market
 from iu.order import Order, OrderSide
 from iu.orm import Base, Session, SessionType, create_session
+from iu.trade import Trade
 from iu.user import User
 from iu.web.wsgi import create_wsgi_app
 
@@ -234,3 +235,71 @@ def fx_buy_order(fx_orders: Mapping[OrderSide, Sequence[Order]]) -> Order:
 @typechecked
 def fx_sell_order(fx_orders: Mapping[OrderSide, Sequence[Order]]) -> Order:
     return fx_orders[OrderSide.sell][0]
+
+
+@fixture
+@typechecked
+def fx_trades(
+    fx_market: Market,
+    fx_orders: Mapping[OrderSide, Sequence[Order]],
+    fx_session: Session,
+    fx_user: User,
+    fx_utcnow: datetime.datetime,
+) -> Sequence[Trade]:
+    second = datetime.timedelta(seconds=1)
+    trades = [
+        Trade(
+            id=uuid.UUID(int=1),
+            created_at=fx_utcnow - 1 * second,
+            pair='BTC/USDT',
+            buy_order=Order(
+                side=OrderSide.buy,
+                user=fx_user,
+                market=fx_market,
+                volume=decimal.Decimal('2'),
+                remaining_volume=decimal.Decimal('2'),
+                price=decimal.Decimal('10000'),
+            ),
+            sell_order=fx_orders[OrderSide.sell][0],
+            side=OrderSide.buy,
+            volume=decimal.Decimal('2'),
+            price=decimal.Decimal('10000'),
+            index=0,
+        ),
+        Trade(
+            id=uuid.UUID(int=2),
+            created_at=fx_utcnow - 1 * second,
+            pair='BTC/USDT',
+            buy_order=fx_orders[OrderSide.buy][0],
+            sell_order=Order(
+                side=OrderSide.sell,
+                user=fx_user,
+                market=fx_market,
+                volume=decimal.Decimal('3'),
+                remaining_volume=decimal.Decimal('3'),
+                price=decimal.Decimal('8000'),
+            ),
+            side=OrderSide.sell,
+            volume=decimal.Decimal('3'),
+            price=decimal.Decimal('9000'),
+            index=0,
+        ),
+    ]
+    for trade in trades:
+        trade.buy_order.remaining_volume -= trade.volume
+        trade.sell_order.remaining_volume -= trade.volume
+    fx_session.add_all(trades)
+    fx_session.flush()
+    return trades
+
+
+@fixture
+@typechecked
+def fx_buy_trade(fx_trades: Sequence[Trade]) -> Trade:
+    return fx_trades[0]
+
+
+@fixture
+@typechecked
+def fx_sell_trade(fx_trades: Sequence[Trade]) -> Trade:
+    return fx_trades[1]
