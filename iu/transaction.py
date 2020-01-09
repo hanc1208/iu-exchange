@@ -42,3 +42,17 @@ class Transaction(Base):
         'polymorphic_identity': None,
         'with_polymorphic': '*',
     }
+
+
+class TradeTransaction(Transaction):
+    id = Column(
+        UUIDType, ForeignKey('transaction.id'),
+        default=uuid.uuid4, primary_key=True,
+    )
+    trade_id = Column(UUIDType, ForeignKey('trade.id'))
+    trade = relationship('Trade')
+
+    __tablename__ = 'trade_transaction'
+    __mapper_args__ = {
+        'polymorphic_identity': TransactionType.trade,
+    }
