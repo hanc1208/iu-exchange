@@ -1,8 +1,27 @@
+import json
 from typing import Any, Mapping
+import uuid
 
+from pytest import raises
 from typeguard import typechecked
 
-from iu.web.wsgi import create_wsgi_app
+from iu.web.wsgi import create_wsgi_app, JSONEncoder
+
+
+@typechecked
+def test_json_encoder():
+    hard_to_serialize = uuid.UUID('90ce88e3-8fe9-4d76-b84f-975ea47e9637')
+
+    with raises(TypeError) as e:
+        json.JSONEncoder().encode(hard_to_serialize)
+    assert 'is not JSON serializable' in str(e.value)
+
+    expected = '"90ce88e3-8fe9-4d76-b84f-975ea47e9637"'
+    assert JSONEncoder().encode(hard_to_serialize) == expected
+
+    with raises(TypeError) as e:
+        assert JSONEncoder().encode(object())
+    assert 'is not JSON serializable' in str(e.value)
 
 
 @typechecked
