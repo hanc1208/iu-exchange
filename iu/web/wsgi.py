@@ -7,6 +7,7 @@ from typeguard import typechecked
 from ..context import session
 from ..orm import Base, migrate
 from ..serializer import serialize
+from .currency import bp_currency
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -24,6 +25,7 @@ def create_wsgi_app(config: Mapping[str, Any]) -> Flask:
     app.config.update(config['web'])
     app.config['APP_CONFIG'] = config
     app.json_encoder = JSONEncoder
+    app.register_blueprint(bp_currency)
     migrate.init_app(app, Base)
 
     @app.teardown_request
