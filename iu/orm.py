@@ -1,3 +1,4 @@
+import decimal
 from typing import Union
 
 from flask_migrate import Migrate
@@ -6,6 +7,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session as SQLAlchemySession, sessionmaker
 from typeguard import typechecked
 from werkzeug.local import LocalProxy
+
+decimal.getcontext().prec = 36
 
 Session = sessionmaker()
 SessionType = Union[SQLAlchemySession, LocalProxy]
