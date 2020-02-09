@@ -1,0 +1,5 @@
+.aws
+.cache
+.git
+.idea
+*.pem

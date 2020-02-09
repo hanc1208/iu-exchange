@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: websocket
+spec:
+  selector:
+    app.kubernetes.io/part-of: iu-exchange
+    app.kubernetes.io/name: websocket
+  ports:
+    - port: 8517
+      targetPort: 8517
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websocket
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: websocket
+  template:
+    metadata:
+      name: websocket
+      labels:
+        app.kubernetes.io/part-of: iu-exchange
+        app.kubernetes.io/name: websocket
+    spec:
+      containers:
+      - name: websocket
+        image: iu-exchange:latest
+        imagePullPolicy: IfNotPresent
+        command: ["python", "run_websocket.py", "-p", "8517", "-c", "prod.toml"]
+        envFrom:
+          - configMapRef:
+              name: database-config
+        ports:
+        - containerPort: 8516

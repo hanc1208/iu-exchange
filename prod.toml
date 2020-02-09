@@ -1,5 +1,12 @@
 [web]
 SECRET_KEY = '95a106a30a86c42e622187acf7575c5f8009133d044d5275'
+# SERVER_NAME = 'ec2-13-124-216-201.ap-northeast-2.compute.amazonaws.com'
+
+[websocket]
+url = ''
 
 [database]
-url = "postgresql:///iu-exchange"
+url = ''
+
+[amqp]
+url = ''

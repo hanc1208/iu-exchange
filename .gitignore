@@ -129,3 +129,4 @@ ENV/
 .ropeproject
 
 *.toml
+iu/web/static/frontend

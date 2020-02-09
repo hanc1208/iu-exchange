@@ -8,7 +8,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.expression import asc, desc
 from typeguard import typechecked
 
+from iu.currency import Currency
+from iu.market import Market
 from iu.order import Order, OrderSide
+from iu.transaction import BlockchainTransaction
+from iu.user import User
 
 
 def test_order_side():
@@ -229,3 +233,71 @@ def test_order_active(fx_buy_order: Order, fx_session: Session):
     assert fx_session.query(Order.active).filter(
         Order.id == fx_buy_order.id,
     ).scalar() is False
+
+
+def o(side, user, base_currency, quote_currency, volume, price):
+    return Order(
+        side=side,
+        user=user,
+        base_currency=base_currency,
+        quote_currency=quote_currency,
+        volume=volume,
+        remaining_volume=volume,
+        price=price,
+    )
+
+
+def test_order_book(fx_wsgi_app, fx_session: Session):
+    krw_currency = Currency(id='KRW')
+    btc_currency = Currency(id='BTC')
+    fx_session.add_all([krw_currency, btc_currency])
+    fx_session.flush()
+
+    user_1 = User()
+    user_2 = User()
+    fx_session.add_all([
+        user_1,
+        user_2,
+        BlockchainTransaction(user=user_1, currency='KRW', amount=100000000),
+        BlockchainTransaction(user=user_2, currency='BTC', amount=100),
+        Market(base_currency='BTC', quote_currency='KRW'),
+    ])
+    fx_session.flush()
+
+    orders = [
+        o(OrderSide.sell, user_2, 'KRW', 'BTC', 4, 1000000),
+        o(OrderSide.sell, user_2, 'KRW', 'BTC', 4, 3000000),
+        o(OrderSide.buy, user_1, 'KRW', 'BTC', 1, 1000000),
+        o(OrderSide.buy, user_1, 'KRW', 'BTC', 5, 3000000),
+        o(OrderSide.buy, user_1, 'KRW', 'BTC', 2, 2000000),
+        o(OrderSide.sell, user_2, 'KRW', 'BTC', 3, 2000000),
+        o(OrderSide.sell, user_2, 'KRW', 'BTC', 3, 1000000),
+        o(OrderSide.sell, user_2, 'KRW', 'BTC', 5, 4000000),
+        o(OrderSide.sell, user_2, 'KRW', 'BTC', 2, 5000000),
+        o(OrderSide.buy, user_1, 'KRW', 'BTC', 9, 1000000),
+        o(OrderSide.buy, user_1, 'KRW', 'BTC', 8, 4000000),
+    ]
+
+    for order in orders:
+        fx_session.add(order)
+        order.validate()
+        order.trade()
+        fx_session.flush()
+
+    assert user_1.balance_of('KRW') == 55000000
+    assert user_1.balance_of('BTC') == 19
+    assert user_1.usable_balance_of('KRW') == 49000000
+    assert user_2.balance_of('KRW') == 45000000
+    assert user_2.balance_of('BTC') == 81
+    assert user_2.usable_balance_of('BTC') == 79
+    assert orders[0].filled
+    assert orders[1].filled
+    assert orders[2].filled
+    assert orders[3].filled
+    assert orders[4].filled
+    assert orders[5].filled
+    assert orders[6].filled
+    assert orders[7].filled
+    assert orders[8].remaining_volume == 2
+    assert orders[9].remaining_volume == 6
+    assert orders[10].filled

@@ -8,6 +8,8 @@ import uuid
 from sqlalchemy.inspection import inspect
 from typeguard import typechecked
 
+from .market import Market
+from .trade import Trade
 from .orm import Base
 
 
@@ -99,4 +101,29 @@ def serialize_db_model(obj: Base) -> Mapping[str, Any]:
     return serialize({
         attr.key: getattr(obj, attr.key)
         for attr in inspect(obj).mapper.column_attrs
+    })
+
+
+@serialize.register(Market)
+@typechecked
+def serialize_market(obj: Market) -> Mapping[str, Any]:
+    return serialize({
+        'pair': obj.pair,
+        'currentPrice': obj.current_price,
+        'makerFee': obj.maker_fee,
+        'takerFee': obj.taker_fee,
+        'minimumOrderAmount': obj.minimum_order_amount,
+    })
+
+
+@serialize.register(Trade)
+@typechecked
+def serialize_trade(obj: Trade) -> Mapping[str, Any]:
+    return serialize({
+        'id': obj.id,
+        'createdAt': obj.created_at,
+        'pair': obj.pair,
+        'side': obj.side,
+        'price': obj.price,
+        'volume': obj.volume,
     })
